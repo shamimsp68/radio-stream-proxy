@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/radio1",
+      "destination": "http://139.59.86.99:12496/stream"
+    },
+    {
+      "source": "/radio2",
+      "destination": "http://stream.zeno.fm/gpgkgp9mp18uv.mp3"
+    }
+  ]
+}

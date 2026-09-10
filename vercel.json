@@ -7,6 +7,10 @@
     {
       "source": "/radio2",
       "destination": "http://stream.zeno.fm/gpgkgp9mp18uv.mp3"
+    },
+    {
+      "source": "/radio3",
+      "destination": "http://stream.zeno.fm/gpgkgp9mp18uv.mp3"
     }
   ]
 }

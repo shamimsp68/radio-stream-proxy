@@ -10,7 +10,7 @@
     },
     {
       "source": "/radio3",
-      "destination": "http://stream.zeno.fm/gpgkgp9mp18uv.mp3"
+      "destination": "http://s3.myradiostream.com:14498/;"
     }
   ]
 }

@@ -1,65 +1,57 @@
-export default async function handler(req, res) {
-  const STREAM_URL = 'http://118.179.215.45:8000/';
+import http from 'http';
 
-  try {
-    const response = await fetch(STREAM_URL, {
-      headers: {
-        'User-Agent': 'WinampMPEG/5.0',
-        'Icy-MetaData': '1'
-      }
-    });
-
-    if (!response.ok) {
-      return res.status(response.status).send('Radio stream unavailable');
+export default function handler(req, res) {
+  const options = {
+    hostname: '118.179.215.45',
+    port: 8000,
+    path: '/;',
+    method: 'GET',
+    headers: {
+      'User-Agent': 'WinampMPEG/5.0',
+      'Icy-MetaData': '1',
+      'Connection': 'keep-alive'
     }
+  };
+
+  const proxyReq = http.request(options, (proxyRes) => {
+    res.statusCode = proxyRes.statusCode || 200;
 
     res.setHeader(
       'Content-Type',
-      response.headers.get('content-type') || 'audio/mpeg'
+      proxyRes.headers['content-type'] || 'audio/mpeg'
     );
 
-    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Cache-Control', 'no-cache, no-store');
     res.setHeader('Access-Control-Allow-Origin', '*');
 
-    // SHOUTcast ICY headers
-    const icyHeaders = [
-      'icy-name',
-      'icy-genre',
-      'icy-br',
-      'icy-metaint',
-      'icy-url'
-    ];
-
-    for (const header of icyHeaders) {
-      const value = response.headers.get(header);
-      if (value) {
-        res.setHeader(header, value);
-      }
+    if (proxyRes.headers['icy-name']) {
+      res.setHeader('icy-name', proxyRes.headers['icy-name']);
     }
 
-    if (!response.body) {
-      return res.status(502).send('No stream body received');
+    if (proxyRes.headers['icy-br']) {
+      res.setHeader('icy-br', proxyRes.headers['icy-br']);
     }
 
-    const reader = response.body.getReader();
+    if (proxyRes.headers['icy-metaint']) {
+      res.setHeader('icy-metaint', proxyRes.headers['icy-metaint']);
+    }
 
-    res.writeHead(200);
+    proxyRes.pipe(res);
 
-    try {
-      while (true) {
-        const { done, value } = await reader.read();
+    req.on('close', () => {
+      proxyReq.destroy();
+    });
+  });
 
-        if (done) break;
+  proxyReq.on('error', (error) => {
+    console.error('Radio Amber proxy error:', error);
 
-        res.write(Buffer.from(value));
-      }
-    } finally {
-      reader.releaseLock();
+    if (!res.headersSent) {
+      res.status(502).send('Unable to connect to Radio Amber');
+    } else {
       res.end();
     }
+  });
 
-  } catch (error) {
-    console.error('Radio proxy error:', error);
-    return res.status(502).send('Unable to connect to Radio Amber');
-  }
+  proxyReq.end();
 }

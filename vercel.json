@@ -17,7 +17,19 @@
     {
       "source": "/radio4",
       "destination": "http://as1.digitalsynapsebd.com:8263/bbcoxfm/stream.mp3"
+    },
+
+
+
+    {
+      "source": "/radio5",
+      "destination": "http://118.179.215.45:8000/;"
     }
+
+
+
+
+    
 
     
     
